@@ -15,7 +15,7 @@
 
 
     <logger name="com.gu.snippets.snippet" level="info" />
-    <logger name="net.liftweb" level="warn" />
+    <logger name="net.liftweb" level="info" />
     <logger name="bootstrap.liftweb" level="info" />
     <root level="info">
         <appender-ref ref="STDOUT" />

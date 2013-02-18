@@ -5,15 +5,17 @@ import net.liftweb.http.rest.RestHelper
 import com.gu.snippets.model.{Snippet, Action}
 import net.liftweb.json.Extraction
 import com.foursquare.rogue.LiftRogue._
-import net.liftweb.common.{Full, Box, Loggable}
+import net.liftweb.common.{Box, Loggable}
 import net.liftweb.json.JsonAST.JValue
-import net.liftweb.http.{JsonResponse, OkResponse, LiftResponse}
+import net.liftweb.http.{JsonResponse}
 
 /** blah */
 object SnippetApi extends RestHelper with Loggable {
   def snippetsAsJson(snippets: List[Snippet]) = Extraction.decompose(snippets.map(_.asJValue))
 
+  implicit def snippets2LiftResponse(snippets: List[Snippet]) = JsonResponse(snippetsAsJson(snippets))
   implicit def action2LiftResponse(action: Action) = JsonResponse(action.asJValue)
+  implicit def snippet2LiftResponse(snippet: Snippet) = JsonResponse(snippet.asJValue)
 
   def recomposeUrl(parts: List[String]) = parts.reduceLeft { _ + "/" + _ }
 
@@ -30,16 +32,25 @@ object SnippetApi extends RestHelper with Loggable {
   }
 
   serve("api" / "snippet" prefix {
-    case Nil JsonGet _ => snippetsAsJson(Snippet.findAll)
+    case Nil JsonGet _ => Snippet.findAll
 
-    case "save" :: Nil JsonPost jSnippet -> _ => {
-      val snippet = ensureExists(jSnippet)
+    case "save" :: Nil JsonPost json -> _ => {
+      val snippet = ensureExists(json)
 
-      snippet.map { snippet => Action.keep(snippet) }
+      for (snippet <- snippet) yield {
+        val previouslyKept = Action.kept_?(snippet)
+
+        previouslyKept.getOrElse({
+          snippet.saves.atomicUpdate(_ + 1)
+          Action.keep(snippet)
+        })
+      }
     }
 
     case "share" :: Nil JsonPost jSnippet -> _ => {
       val snippet = ensureExists(jSnippet)
+
+      snippet.foreach(_.shares.atomicUpdate(_ + 1))
 
       snippet.map { snippet => Action.share(snippet) }
     }
@@ -47,19 +58,21 @@ object SnippetApi extends RestHelper with Loggable {
     case "embed" :: Nil JsonPost jSnippet -> _ => {
       val snippet = ensureExists(jSnippet)
 
+      snippet.foreach(_.embeds.atomicUpdate(_ + 1))
+
       snippet.map { snippet => Action.embed(snippet) }
     }
 
     case "comment" :: Nil JsonPost jSnippet -> _ => {
       val snippet = ensureExists(jSnippet)
 
+      snippet.foreach(_.comments.atomicUpdate(_ + 1))
+
       snippet.map { snippet => Action.comment(snippet) }
     }
 
     case "article" :: articleID JsonGet _ => {
-      val aID = "/" + recomposeUrl(articleID)
-
-      snippetsAsJson(Snippet where (_.articleID eqs aID) fetch())
+      Snippet where (_.articleID eqs "/" + recomposeUrl(articleID)) fetch()
     }
   })
 }
