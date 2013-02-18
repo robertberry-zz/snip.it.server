@@ -1,11 +1,13 @@
 package com.gu.snippets.model
 
+import org.joda.time.DateTime
+
 /* nicer output format for API */
 
-class ActionPack(
-    val saves: List[ActionInfo],
-    val embeds: List[ActionInfo],
-    val comments: List[ActionInfo],
+case class ActionPack(
+    saves: List[ActionInfo],
+    embeds: List[ActionInfo],
+    comments: List[ActionInfo],
     shares: List[ActionInfo])
 
 object ActionPack {
@@ -22,11 +24,13 @@ object ActionPack {
 }
 
 class ActionInfo(
-    val email: String)
+    val email: String,
+    val dateTime: String)
 
 object ActionInfo {
   def apply(action: Action): ActionInfo = {
-    new ActionInfo(action.email.get)
+
+    new ActionInfo(action.email.get, new DateTime(action.created.get).toString)
   }
 }
 
@@ -34,7 +38,7 @@ object ActionInfo {
 class SnippetInfo(
     val articleID: String,
     val reference: String,
-    val contentType: ContentType.Value,
+    val contentType: String,
     val content: String,
     val saves: Long,
     val shares: Long,
@@ -44,18 +48,18 @@ class SnippetInfo(
 
 object SnippetInfo {
   def apply(snippet: Snippet): SnippetInfo = {
-    val actions = Action.forSnippet(snippet)
+    val actions = ActionPack(Action.forSnippet(snippet))
 
     new SnippetInfo(
         snippet.articleID.get,
         snippet.reference.get,
-        snippet.contentType.get,
+        snippet.contentType.get.toString,
         snippet.content.get,
-        snippet.saves.get,
-        snippet.shares.get,
-        snippet.embeds.get,
-        snippet.comments.get,
-        ActionPack(actions)
+        actions.saves.length,
+        actions.shares.length,
+        actions.embeds.length,
+        actions.comments.length,
+        actions
     )
   }
 }

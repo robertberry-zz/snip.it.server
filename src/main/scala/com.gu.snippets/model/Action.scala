@@ -3,7 +3,9 @@ package com.gu.snippets.model
 import com.foursquare.rogue.LiftRogue._
 import net.liftweb.mongodb.record.{MongoMetaRecord, MongoRecord}
 import net.liftweb.mongodb.record.field.ObjectIdPk
-import net.liftweb.record.field.{EnumNameField, StringField}
+import net.liftweb.record.field.{DateTimeField, EnumNameField, StringField}
+import org.joda.time.DateTime
+import java.util.{Locale, Calendar}
 
 /** Action of saving, etc. a Snippet */
 class Action private() extends MongoRecord[Action] with ObjectIdPk[Action] {
@@ -13,6 +15,7 @@ class Action private() extends MongoRecord[Action] with ObjectIdPk[Action] {
   object articleID extends StringField(this, 200)
   object reference extends StringField(this, 200)
   object actionType extends EnumNameField(this, ActionType)
+  object created extends DateTimeField(this)
 }
 
 object Action extends Action with MongoMetaRecord[Action] {
@@ -27,7 +30,8 @@ object Action extends Action with MongoMetaRecord[Action] {
   }
 
   private def create(articleID: String, reference: String, email: String) =
-    Action.createRecord.articleID(articleID).reference(reference).email(email)
+    Action.createRecord.articleID(articleID).reference(reference).email(email).created(
+      DateTime.now().toCalendar(Locale.UK))
 
   def share(articleID: String, reference: String, email: String): Action =
     create(articleID, reference, email).actionType(ActionType.share).save
