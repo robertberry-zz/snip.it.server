@@ -2,20 +2,19 @@ package com.gu.snippets.snippet
 
 
 import net.liftweb.http.rest.RestHelper
-import com.gu.snippets.model.{Snippet, Action}
+import com.gu.snippets.model.{SnippetInfo, Snippet, Action}
 import net.liftweb.json.Extraction
 import com.foursquare.rogue.LiftRogue._
 import net.liftweb.common.{Box, Loggable}
 import net.liftweb.json.JsonAST.JValue
-import net.liftweb.http.{JsonResponse}
+import net.liftweb.http.JsonResponse
 
 /** blah */
 object SnippetApi extends RestHelper with Loggable {
-  def snippetsAsJson(snippets: List[Snippet]) = Extraction.decompose(snippets.map(_.asJValue))
+  def snippetsAsJson(snippets: List[Snippet]) = Extraction.decompose(snippets.map(s => SnippetInfo(s)))
 
   implicit def snippets2LiftResponse(snippets: List[Snippet]) = JsonResponse(snippetsAsJson(snippets))
   implicit def action2LiftResponse(action: Action) = JsonResponse(action.asJValue)
-  implicit def snippet2LiftResponse(snippet: Snippet) = JsonResponse(snippet.asJValue)
 
   def recomposeUrl(parts: List[String]) = parts.reduceLeft { _ + "/" + _ }
 

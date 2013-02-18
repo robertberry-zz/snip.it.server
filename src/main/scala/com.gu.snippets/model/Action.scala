@@ -19,6 +19,13 @@ object Action extends Action with MongoMetaRecord[Action] {
   override def collectionName = "actions"
   override def mongoIdentifier = SnippetMongo
 
+  def forSnippet(snippet: Snippet): List[Action] = {
+    val articleID = snippet.articleID.get
+    val reference = snippet.reference.get
+
+    Action where (_.articleID eqs articleID) and (_.reference eqs reference) fetch()
+  }
+
   private def create(articleID: String, reference: String, email: String) =
     Action.createRecord.articleID(articleID).reference(reference).email(email)
 
