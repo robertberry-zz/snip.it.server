@@ -1,4 +1,4 @@
-package code
+package com.gu.snippets
 package snippet
 
 import net.liftweb._

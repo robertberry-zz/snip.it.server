@@ -25,7 +25,8 @@ libraryDependencies ++= {
     "org.eclipse.jetty.orbit" % "javax.servlet"  % "3.0.0.v201112011016" % "container,test" artifacts Artifact("javax.servlet", "jar", "jar"),
     "ch.qos.logback"    % "logback-classic"      % "1.0.6",
     "org.specs2"        %% "specs2"              % "1.12.1"           % "test",
-    "net.liftweb"       %% "lift-mongodb-record" % "2.4",
+    "junit" % "junit" % "4.7",
+    "net.liftweb"       %% "lift-mongodb-record" % "2.5-M4",
     "com.foursquare"    %% "rogue-field"         % "2.0.0-beta14" intransitive(),
     "com.foursquare"    %% "rogue-core"          % "2.0.0-beta14" intransitive(),
     "com.foursquare"    %% "rogue-lift"          % "2.0.0-beta14" intransitive()
