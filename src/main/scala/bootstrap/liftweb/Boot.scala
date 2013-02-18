@@ -6,6 +6,7 @@ import Helpers._
 
 import common._
 import http._
+import provider.HTTPParam
 import sitemap._
 import Loc._
 import net.liftmodules.JQueryModule
@@ -58,6 +59,15 @@ class Boot {
 
     // add Snippet API to dispatch table
     LiftRules.statelessDispatch.append(SnippetApi)
+
+    // Allow Cross-Origin Resource Sharing
+    LiftRules.supplimentalHeaders = s => s.addHeaders(
+      List(HTTPParam("X-Lift-Version", LiftRules.liftVersion),
+        HTTPParam("Access-Control-Allow-Origin", "*"),
+        HTTPParam("Access-Control-Allow-Credentials", "true"),
+        HTTPParam("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS"),
+        HTTPParam("Access-Control-Allow-Headers", "WWW-Authenticate,Keep-Alive,User-Agent,X-Requested-With,Cache-Control,Content-Type")
+      ))
 
     // connect to Mongo
     SnippetMongo.connectToMongo()
