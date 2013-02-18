@@ -1,9 +1,10 @@
 package com.gu.snippets.model
 
-import net.liftweb.mongodb.record.{MongoMetaRecord, MongoId, MongoRecord}
-import com.foursquare.rogue.index.{Asc, IndexedRecord}
+import net.liftweb.mongodb.record.{MongoMetaRecord, MongoRecord}
 import net.liftweb.record.field.{EnumNameField, StringField}
 import net.liftweb.mongodb.record.field.ObjectIdPk
+import net.liftweb.json.JsonAST.JValue
+import net.liftweb.json.Extraction
 
 /** */
 class Snippet private() extends MongoRecord[Snippet] with ObjectIdPk[Snippet] {
@@ -19,4 +20,7 @@ class Snippet private() extends MongoRecord[Snippet] with ObjectIdPk[Snippet] {
 object Snippet extends Snippet with MongoMetaRecord[Snippet] {
   override def collectionName = "snippets"
   override def mongoIdentifier = SnippetMongo
+
+  implicit def toJson(snippets: List[Snippet]): JValue = Extraction.decompose(snippets)
+  implicit def toJson(snippet: Snippet): JValue = snippet.asJValue
 }

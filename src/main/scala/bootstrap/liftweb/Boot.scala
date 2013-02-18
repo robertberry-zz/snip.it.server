@@ -10,6 +10,8 @@ import sitemap._
 import Loc._
 import net.liftmodules.JQueryModule
 import net.liftweb.http.js.jquery._
+import com.gu.snippets.snippet.SnippetApi
+import com.gu.snippets.model.SnippetMongo
 
 
 /**
@@ -54,5 +56,10 @@ class Boot {
     JQueryModule.InitParam.JQuery=JQueryModule.JQuery172
     JQueryModule.init()
 
+    // add Snippet API to dispatch table
+    LiftRules.statelessDispatch.append(SnippetApi)
+
+    // connect to Mongo
+    SnippetMongo.connectToMongo()
   }
 }

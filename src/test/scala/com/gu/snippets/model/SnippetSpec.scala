@@ -28,7 +28,19 @@ class SnippetSpec extends Specification {
         .reference("?")
         .save
 
-      //snippet.delete_! must beTrue
+      snippet.delete_! must beTrue
+
+      tearDownMongo()
+    }
+  }
+
+  "Snippet" should {
+    "read records" in {
+      setupMongo()
+
+      val snippets = Snippet.findAll
+
+      snippets.length must beEqualTo(1)
 
       tearDownMongo()
     }
