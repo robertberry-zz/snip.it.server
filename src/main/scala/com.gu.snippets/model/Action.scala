@@ -23,9 +23,9 @@ object Action extends Action with MongoMetaRecord[Action] {
   override def collectionName = "actions"
   override def mongoIdentifier = SnippetMongo
 
-  private var onCreateCallbacks = List[(Action, Snippet) => Unit]()
+  private var onCreateCallbacks = List[(Action, Snippet) => Boolean]()
 
-  def onCreate(callback: (Action, Snippet) => Unit) {
+  def onCreate(callback: (Action, Snippet) => Boolean) {
     synchronized {
       onCreateCallbacks = callback :: onCreateCallbacks
     }
@@ -46,8 +46,12 @@ object Action extends Action with MongoMetaRecord[Action] {
       .actionType(actionType)
       .save
 
-    for (callback <- onCreateCallbacks) {
-      callback(action, snippet)
+    val callbacksToRemove = onCreateCallbacks.filter(_(action, snippet)).toSet
+
+    // is this synchronized with the same block in onCreate? or could this theoretically overwrite new callbacks being
+    // added to the list ... ?
+    synchronized {
+      onCreateCallbacks = onCreateCallbacks.filterNot(callbacksToRemove contains _)
     }
 
     action

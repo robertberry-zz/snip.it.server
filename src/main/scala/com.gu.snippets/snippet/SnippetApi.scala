@@ -84,8 +84,9 @@ object SnippetApi extends RestHelper with Loggable {
           Schedule.schedule(() => satisfyRequest(JNull), 110 seconds)
         }
 
-        val onCreateCallback: (Action, Snippet) => Unit = { (action, snippet) =>
+        val onCreateCallback: (Action, Snippet) => Boolean = { (action, snippet) =>
           satisfyRequest(Extraction.decompose(SnippetUpdate(snippet, action)))
+          true
         }
 
         Action.onCreate(onCreateCallback)
@@ -100,9 +101,12 @@ object SnippetApi extends RestHelper with Loggable {
           Schedule.schedule(() => satisfyRequest(JNull), 110 seconds)
         }
 
-        val onCreateCallback: (Action, Snippet) => Unit = { (action, snippet) =>
+        val onCreateCallback: (Action, Snippet) => Boolean = { (action, snippet) =>
           if (action.articleID.get == articleID) {
             satisfyRequest(Extraction.decompose(SnippetUpdate(snippet, action)))
+            true
+          } else {
+            false
           }
         }
 
