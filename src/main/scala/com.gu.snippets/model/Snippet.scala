@@ -17,6 +17,7 @@ class Snippet private() extends MongoRecord[Snippet] with ObjectIdPk[Snippet] {
 
   // e-mail of who originally saved the snippet
   object email extends StringField(this, 255)
+  object username extends StringField(this, 100)
 
   /* counts */
   object saves extends LongField(this)

@@ -25,12 +25,13 @@ object ActionPack {
 
 class ActionInfo(
     val email: String,
+    val username: String,
     val dateTime: String)
 
 object ActionInfo {
   def apply(action: Action): ActionInfo = {
 
-    new ActionInfo(action.email.get, new DateTime(action.created.get).toString)
+    new ActionInfo(action.email.get, action.username.get, new DateTime(action.created.get).toString)
   }
 }
 

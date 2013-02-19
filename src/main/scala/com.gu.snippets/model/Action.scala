@@ -12,6 +12,7 @@ class Action private() extends MongoRecord[Action] with ObjectIdPk[Action] {
   def meta = Action
 
   object email extends StringField(this, 255)
+  object username extends StringField(this, 100)
   object articleID extends StringField(this, 200)
   object reference extends StringField(this, 200)
   object actionType extends EnumNameField(this, ActionType)
@@ -29,33 +30,33 @@ object Action extends Action with MongoMetaRecord[Action] {
     Action where (_.articleID eqs articleID) and (_.reference eqs reference) fetch()
   }
 
-  private def create(articleID: String, reference: String, email: String) =
+  private def create(articleID: String, reference: String, email: String, username: String) =
     Action.createRecord.articleID(articleID).reference(reference).email(email).created(
       DateTime.now().toCalendar(Locale.UK))
 
-  def share(articleID: String, reference: String, email: String): Action =
-    create(articleID, reference, email).actionType(ActionType.share).save
+  def share(articleID: String, reference: String, email: String, username: String): Action =
+    create(articleID, reference, email, username).actionType(ActionType.share).save
 
   def share(snippet: Snippet): Action =
-    share(snippet.articleID.get, snippet.reference.get, snippet.email.get)
+    share(snippet.articleID.get, snippet.reference.get, snippet.email.get, snippet.username.get)
 
-  def comment(articleID: String, reference: String, email: String): Action =
-    create(articleID, reference, email).actionType(ActionType.comment).save
+  def comment(articleID: String, reference: String, email: String, username: String): Action =
+    create(articleID, reference, email, username).actionType(ActionType.comment).save
 
   def comment(snippet: Snippet): Action =
-    comment(snippet.articleID.get, snippet.reference.get, snippet.email.get)
+    comment(snippet.articleID.get, snippet.reference.get, snippet.email.get, snippet.username.get)
 
-  def embed(articleID: String, reference: String, email: String): Action =
-    create(articleID, reference, email).actionType(ActionType.embed).save
+  def embed(articleID: String, reference: String, email: String, username: String): Action =
+    create(articleID, reference, email, username).actionType(ActionType.embed).save
 
   def embed(snippet: Snippet): Action =
-    embed(snippet.articleID.get, snippet.reference.get, snippet.email.get)
+    embed(snippet.articleID.get, snippet.reference.get, snippet.email.get, snippet.username.get)
 
-  def keep(articleID: String, reference: String, email: String): Action =
-    create(articleID, reference, email).actionType(ActionType.save).save
+  def keep(articleID: String, reference: String, email: String, username: String): Action =
+    create(articleID, reference, email, username).actionType(ActionType.save).save
 
   def keep(snippet: Snippet): Action =
-    keep(snippet.articleID.get, snippet.reference.get, snippet.email.get)
+    keep(snippet.articleID.get, snippet.reference.get, snippet.email.get, snippet.username.get)
 
   // has the snippet already been kept? if so return original action
   // TODO this is crappy 'cos it relies on the e-mail field in Snippet, which should really be the creator's
