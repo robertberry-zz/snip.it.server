@@ -4,6 +4,7 @@ import org.joda.time.DateTime
 
 /** Nicer JSON format for the snippet updates */
 case class SnippetUpdate(
+    id: String,
     articleID: String,
     reference: String,
     contentType: String,
@@ -16,6 +17,7 @@ case class SnippetUpdate(
 object SnippetUpdate {
   def apply(snippet: Snippet, action: Action): SnippetUpdate = {
     new SnippetUpdate(
+      snippet.id.get.toString,
       snippet.articleID.get,
       snippet.reference.get,
       snippet.contentType.get.toString,

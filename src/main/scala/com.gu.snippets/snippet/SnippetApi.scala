@@ -77,6 +77,18 @@ object SnippetApi extends RestHelper with Loggable {
       Snippet.forArticle(getArticleID(articleID))
     }
 
+    case "actions" :: Nil JsonGet _ => {
+      val actions = Action.all
+      val snippetsByRef = Snippet.all.groupBy(_.reference.get)
+
+      Extraction.decompose(for {
+        action <- actions
+        snippet <- snippetsByRef(action.reference.get)
+      } yield {
+        SnippetUpdate(snippet, action)
+      })
+    }
+
     case "actions" :: articleIDParts JsonGet _ => {
       val articleID = getArticleID(articleIDParts)
 

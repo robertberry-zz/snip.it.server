@@ -31,6 +31,10 @@ object Action extends Action with MongoMetaRecord[Action] {
     }
   }
 
+  def all: List[Action] = {
+    Action orderDesc (_.created) fetch()
+  }
+
   def forSnippet(snippet: Snippet): List[Action] = {
     val articleID = snippet.articleID.get
     val reference = snippet.reference.get

@@ -30,6 +30,10 @@ object Snippet extends Snippet with MongoMetaRecord[Snippet] {
   override def collectionName = "snippets"
   override def mongoIdentifier = SnippetMongo
 
+  def all: List[Snippet] = {
+    Snippet fetch()
+  }
+
   def apply(articleID: String, reference: String): Box[Snippet] = {
     (Snippet where (_.articleID eqs articleID) and (_.reference eqs reference ) fetch()).headOption
   }
