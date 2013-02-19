@@ -2,7 +2,7 @@ package com.gu.snippets.snippet
 
 
 import net.liftweb.http.rest.{RestContinuation, RestHelper}
-import com.gu.snippets.model.{SnippetInfo, Snippet, Action}
+import com.gu.snippets.model.{ActionType, SnippetInfo, Snippet, Action}
 import net.liftweb.json.Extraction
 import com.foursquare.rogue.LiftRogue._
 import net.liftweb.common.{Box, Loggable}
@@ -45,7 +45,7 @@ object SnippetApi extends RestHelper with Loggable {
 
         previouslyKept.getOrElse({
           snippet.saves.atomicUpdate(_ + 1)
-          Action.keep(snippet)
+          Action(snippet, ActionType.save)
         })
       }
     }
@@ -55,7 +55,7 @@ object SnippetApi extends RestHelper with Loggable {
 
       snippet.foreach(_.shares.atomicUpdate(_ + 1))
 
-      snippet.map { snippet => Action.share(snippet) }
+      snippet.map { snippet => Action(snippet, ActionType.share) }
     }
 
     case "embed" :: Nil JsonPost jSnippet -> _ => {
@@ -63,7 +63,7 @@ object SnippetApi extends RestHelper with Loggable {
 
       snippet.foreach(_.embeds.atomicUpdate(_ + 1))
 
-      snippet.map { snippet => Action.embed(snippet) }
+      snippet.map { snippet => Action(snippet, ActionType.embed) }
     }
 
     case "comment" :: Nil JsonPost jSnippet -> _ => {
@@ -71,7 +71,7 @@ object SnippetApi extends RestHelper with Loggable {
 
       snippet.foreach(_.comments.atomicUpdate(_ + 1))
 
-      snippet.map { snippet => Action.comment(snippet) }
+      snippet.map { snippet => Action(snippet, ActionType.comment) }
     }
 
     case "article" :: articleID JsonGet _ => {
