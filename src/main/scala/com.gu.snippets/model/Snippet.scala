@@ -36,5 +36,9 @@ object Snippet extends Snippet with MongoMetaRecord[Snippet] {
 
   def unapply(articleID: String, reference: String): Box[Snippet] = apply(articleID, reference)
 
+  def forArticle(articleID: String): List[Snippet] = {
+    Snippet where (_.articleID eqs articleID) fetch()
+  }
+
   def isCreated_?(snippet: Snippet) = apply(snippet.articleID.get, snippet.reference.get).isDefined
 }

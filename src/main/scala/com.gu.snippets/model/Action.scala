@@ -38,6 +38,10 @@ object Action extends Action with MongoMetaRecord[Action] {
     Action where (_.articleID eqs articleID) and (_.reference eqs reference) fetch()
   }
 
+  def forArticle(articleID: String): List[Action] = {
+    Action where (_.articleID eqs articleID) orderDesc(_.created) fetch()
+  }
+
   def apply(snippet: Snippet, actionType: ActionType.Value): Action = {
     val action = Action.createRecord.articleID(snippet.articleID.get)
       .reference(snippet.reference.get)

@@ -4,7 +4,6 @@ package com.gu.snippets.snippet
 import net.liftweb.http.rest.{RestContinuation, RestHelper}
 import com.gu.snippets.model._
 import net.liftweb.json.Extraction
-import com.foursquare.rogue.LiftRogue._
 import net.liftweb.common.{Box, Loggable}
 import net.liftweb.json.JsonAST.{JNull, JValue}
 import net.liftweb.http._
@@ -75,7 +74,22 @@ object SnippetApi extends RestHelper with Loggable {
     }
 
     case "article" :: articleID JsonGet _ => {
-      Snippet where (_.articleID eqs getArticleID(articleID)) fetch()
+      Snippet.forArticle(getArticleID(articleID))
+    }
+
+    case "actions" :: articleIDParts JsonGet _ => {
+      val articleID = getArticleID(articleIDParts)
+
+      val snippetsByRef = Snippet.forArticle(articleID).groupBy(_.reference.get)
+
+      val actions = Action.forArticle(articleID)
+
+      Extraction.decompose(for {
+        action <- actions
+        snippet <- snippetsByRef(action.reference.get)
+      } yield {
+        SnippetUpdate(snippet, action)
+      })
     }
 
     case "poll" :: Nil JsonGet _ => {
