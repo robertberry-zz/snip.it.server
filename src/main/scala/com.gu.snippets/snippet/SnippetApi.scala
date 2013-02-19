@@ -1,13 +1,15 @@
 package com.gu.snippets.snippet
 
 
-import net.liftweb.http.rest.RestHelper
+import net.liftweb.http.rest.{RestContinuation, RestHelper}
 import com.gu.snippets.model.{SnippetInfo, Snippet, Action}
 import net.liftweb.json.Extraction
 import com.foursquare.rogue.LiftRogue._
 import net.liftweb.common.{Box, Loggable}
-import net.liftweb.json.JsonAST.JValue
-import net.liftweb.http.JsonResponse
+import net.liftweb.json.JsonAST.{JNull, JValue}
+import net.liftweb.http._
+import net.liftweb.util._
+import Helpers._
 
 /** blah */
 object SnippetApi extends RestHelper with Loggable {
@@ -17,6 +19,8 @@ object SnippetApi extends RestHelper with Loggable {
   implicit def action2LiftResponse(action: Action) = JsonResponse(action.asJValue)
 
   def recomposeUrl(parts: List[String]) = parts.reduceLeft { _ + "/" + _ }
+
+  def getArticleID(urlParts: List[String]) = "/" + recomposeUrl(urlParts)
 
   def ensureExists(jSnippet: JValue): Box[Snippet] = {
     // save snippet if not already in DB
@@ -71,7 +75,25 @@ object SnippetApi extends RestHelper with Loggable {
     }
 
     case "article" :: articleID JsonGet _ => {
-      Snippet where (_.articleID eqs "/" + recomposeUrl(articleID)) fetch()
+      Snippet where (_.articleID eqs getArticleID(articleID)) fetch()
+    }
+
+    case "poll" :: articleIDParts JsonGet _ => {
+      val articleID = getArticleID(articleIDParts)
+
+      RestContinuation.async {
+        satisfyRequest => {
+          Schedule.schedule(() => satisfyRequest(JNull), 110 seconds)
+        }
+
+        val onCreateCallback: (Action) => Unit = { action =>
+          if (action.articleID.get == articleID) {
+            satisfyRequest(action.asJValue)
+          }
+        }
+
+        Action.onCreate(onCreateCallback)
+      }
     }
   })
 }

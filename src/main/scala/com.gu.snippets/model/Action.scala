@@ -5,7 +5,7 @@ import net.liftweb.mongodb.record.{MongoMetaRecord, MongoRecord}
 import net.liftweb.mongodb.record.field.ObjectIdPk
 import net.liftweb.record.field.{DateTimeField, EnumNameField, StringField}
 import org.joda.time.DateTime
-import java.util.{Locale, Calendar}
+import java.util.{Locale}
 
 /** Action of saving, etc. a Snippet */
 class Action private() extends MongoRecord[Action] with ObjectIdPk[Action] {
@@ -23,6 +23,20 @@ object Action extends Action with MongoMetaRecord[Action] {
   override def collectionName = "actions"
   override def mongoIdentifier = SnippetMongo
 
+  private var onCreateCallbacks = List[(Action) => Unit]()
+
+  def onCreate(callback: (Action) => Unit) {
+    synchronized {
+      onCreateCallbacks = callback :: onCreateCallbacks
+    }
+  }
+
+  def offCreate(callback: (Action) => Unit) {
+    synchronized {
+      onCreateCallbacks = onCreateCallbacks filterNot { _ == callback }
+    }
+  }
+
   def forSnippet(snippet: Snippet): List[Action] = {
     val articleID = snippet.articleID.get
     val reference = snippet.reference.get
@@ -30,9 +44,16 @@ object Action extends Action with MongoMetaRecord[Action] {
     Action where (_.articleID eqs articleID) and (_.reference eqs reference) fetch()
   }
 
-  private def create(articleID: String, reference: String, email: String, username: String) =
-    Action.createRecord.articleID(articleID).reference(reference).email(email).created(
+  private def create(articleID: String, reference: String, email: String, username: String): Action = {
+    val action = Action.createRecord.articleID(articleID).reference(reference).email(email).created(
       DateTime.now().toCalendar(Locale.UK))
+
+    for (callback <- onCreateCallbacks) {
+      callback(action)
+    }
+
+    action
+  }
 
   def share(articleID: String, reference: String, email: String, username: String): Action =
     create(articleID, reference, email, username).actionType(ActionType.share).save
