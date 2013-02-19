@@ -42,6 +42,7 @@ object Action extends Action with MongoMetaRecord[Action] {
     val action = Action.createRecord.articleID(snippet.articleID.get)
       .reference(snippet.reference.get)
       .email(snippet.email.get)
+      .username(snippet.username.get)
       .created(DateTime.now().toCalendar(Locale.UK))
       .actionType(actionType)
       .save
