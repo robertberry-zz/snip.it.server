@@ -2,7 +2,7 @@ package com.gu.snippets.snippet
 
 
 import net.liftweb.http.rest.{RestContinuation, RestHelper}
-import com.gu.snippets.model.{ActionType, SnippetInfo, Snippet, Action}
+import com.gu.snippets.model._
 import net.liftweb.json.Extraction
 import com.foursquare.rogue.LiftRogue._
 import net.liftweb.common.{Box, Loggable}
@@ -78,6 +78,20 @@ object SnippetApi extends RestHelper with Loggable {
       Snippet where (_.articleID eqs getArticleID(articleID)) fetch()
     }
 
+    case "poll" :: Nil JsonGet _ => {
+      RestContinuation.async {
+        satisfyRequest => {
+          Schedule.schedule(() => satisfyRequest(JNull), 110 seconds)
+        }
+
+        val onCreateCallback: (Action, Snippet) => Unit = { (action, snippet) =>
+          satisfyRequest(Extraction.decompose(SnippetUpdate(snippet, action)))
+        }
+
+        Action.onCreate(onCreateCallback)
+      }
+    }
+
     case "poll" :: articleIDParts JsonGet _ => {
       val articleID = getArticleID(articleIDParts)
 
@@ -86,9 +100,9 @@ object SnippetApi extends RestHelper with Loggable {
           Schedule.schedule(() => satisfyRequest(JNull), 110 seconds)
         }
 
-        val onCreateCallback: (Action) => Unit = { action =>
+        val onCreateCallback: (Action, Snippet) => Unit = { (action, snippet) =>
           if (action.articleID.get == articleID) {
-            satisfyRequest(action.asJValue)
+            satisfyRequest(Extraction.decompose(SnippetUpdate(snippet, action)))
           }
         }
 

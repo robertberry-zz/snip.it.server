@@ -23,17 +23,11 @@ object Action extends Action with MongoMetaRecord[Action] {
   override def collectionName = "actions"
   override def mongoIdentifier = SnippetMongo
 
-  private var onCreateCallbacks = List[(Action) => Unit]()
+  private var onCreateCallbacks = List[(Action, Snippet) => Unit]()
 
-  def onCreate(callback: (Action) => Unit) {
+  def onCreate(callback: (Action, Snippet) => Unit) {
     synchronized {
       onCreateCallbacks = callback :: onCreateCallbacks
-    }
-  }
-
-  def offCreate(callback: (Action) => Unit) {
-    synchronized {
-      onCreateCallbacks = onCreateCallbacks filterNot { _ == callback }
     }
   }
 
@@ -53,7 +47,7 @@ object Action extends Action with MongoMetaRecord[Action] {
       .save
 
     for (callback <- onCreateCallbacks) {
-      callback(action)
+      callback(action, snippet)
     }
 
     action
